@@ -2,11 +2,11 @@ import "./App.css";
 import { Client } from "@notionhq/client";
 
 function App() {
-  const notionToken = "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";
+  const notionToken = process.env.REACT_APP_NOTION_TOKEN;
   const notion = new Client({
     auth: notionToken,
   });
-  const databaseId = "1ce888e3b219805db30bda19ad72e632";
+  const databaseId = process.env.REACT_APP_NOTION_DATABASE_ID;
 
   const fetchData = async () => {
     const dbObjects = await notion.databases.retrieve({
