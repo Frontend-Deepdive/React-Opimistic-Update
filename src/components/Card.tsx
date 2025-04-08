@@ -10,7 +10,10 @@ export const Card = (props: CardProps) => {
   return (
     <li key={id}>
       {text} - 좋아요: {likes}
-      <button style={{ marginLeft: "10px" }} onClick={() => onLike(id, likes!)}>
+      <button
+        style={{ marginLeft: "10px" }}
+        onClick={() => onLike(id, likes ?? 0)}
+      >
         ❤️ Like
       </button>
     </li>

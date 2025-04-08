@@ -17,7 +17,7 @@ function App() {
   const mutation = useMutation({
     mutationFn: (pageId: string) => increaseLike(pageId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notionData"] });
+      queryClient.invalidateQueries({ queryKey: ["notionData"] }); // 데이터 무효화
     },
   });
 
@@ -34,10 +34,8 @@ function App() {
   }));
 
   const handleLike = (id: string, currentLikes: number) => {
-    // 1. UI에 먼저 반영
-    addOptimisticLike({ id, currentLikes });
-    // 2. 서버 요청 보내기
-    mutation.mutate(id);
+    addOptimisticLike({ id, currentLikes }); // UI에 즉시 반영
+    mutation.mutate(id); // 서버에 좋아요 증가 요청
   };
 
   if (isLoading) return <div>Loading...</div>;
