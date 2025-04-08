@@ -37,7 +37,7 @@ export const fetchNotionData = async (): Promise<RefinedNotionData[]> => {
 
 export const increaseLike = async (pageId: string): Promise<void> => {
   try {
-    await axios.patch(
+    await axios.post(
       `${import.meta.env.VITE_API_BASE_URL}/notion/like/${pageId}`
     );
   } catch (error) {
