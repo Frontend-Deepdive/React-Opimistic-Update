@@ -24,7 +24,7 @@ function App() {
   /**
    * 낙관적 likes 업데이트
    */
-  const [likes, setLikes] = useState<Record<string, number>>({});
+  const [likes] = useState<Record<string, number>>({});
   const [optimisticLikes, addOptimisticLike] = useOptimistic<
     Record<string, number>,
     { id: string; currentLikes: number }
