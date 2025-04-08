@@ -4,19 +4,16 @@ import { useState } from "react";
 import { Card } from "./components/Card";
 
 function App() {
-  /**
-   * 데이터 패칭
-   */
-
+  //데이터 패칭
   const { data, isLoading, error } = useQuery({
     queryKey: ["notionData"],
     queryFn: fetchNotionData,
   });
   const mutation = useMutation<
-    void, // 반환값 (increaseLike는 반환값이 없음)
-    unknown, // 에러 타입
-    { id: string; currentLikes: number }, // 변수 타입 (pageId)
-    { prevLikes: number } // context 타입
+    void,
+    unknown,
+    { id: string; currentLikes: number },
+    { prevLikes: number }
   >({
     mutationFn: ({ id }) => increaseLike(id),
     onMutate: ({ id, currentLikes }) => {
@@ -50,22 +47,19 @@ function App() {
     },
   });
 
-  /**
-   * ✅ useState로 낙관적 likes 업데이트
-   */
+  //useState로 낙관적 업데이트
   const [optimisticLikes, setOptimisticLikes] = useState<
     Record<string, number>
   >({});
   const [pendingLikeIds, setPendingLikeIds] = useState<Set<string>>(new Set());
 
   const handleLike = (id: string, currentLikes: number) => {
-    mutation.mutate({ id, currentLikes }); // ✅ currentLikes를 넘겨줌
+    mutation.mutate({ id, currentLikes });
   };
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error occurred!</div>;
 
-  console.log("optimisticLikes", optimisticLikes);
   return (
     <div>
       <ul>
