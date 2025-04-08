@@ -15,29 +15,38 @@ function App() {
   const mutation = useMutation<
     void, // 반환값 (increaseLike는 반환값이 없음)
     unknown, // 에러 타입
-    string, // 변수 타입 (pageId)
+    { id: string; currentLikes: number }, // 변수 타입 (pageId)
     { prevLikes: number } // context 타입
   >({
-    mutationFn: (pageId: string) => increaseLike(pageId),
-    // ✅ mutation 실행 직전에 context 반환
-    onMutate: (pageId) => {
-      const prevLikes = optimisticLikes[pageId] ?? 0;
+    mutationFn: ({ id }) => increaseLike(id),
+    onMutate: ({ id, currentLikes }) => {
+      const prevLikes = optimisticLikes[id] ?? currentLikes;
 
       setOptimisticLikes((prev) => ({
         ...prev,
-        [pageId]: prevLikes + 1,
+        [id]: prevLikes + 1,
       }));
+
+      setPendingLikeIds((prev) => new Set(prev).add(id));
 
       return { prevLikes };
     },
-    // ✅ 에러나면 rollback
-    onError: (_error, pageId, context) => {
-      if (!pageId || !context) return;
+    onError: (_error, { id }, context) => {
+      if (!id || !context) return;
 
       setOptimisticLikes((prev) => ({
         ...prev,
-        [pageId]: context.prevLikes,
+        [id]: context.prevLikes,
       }));
+    },
+    onSettled: (_data, _error, { id }) => {
+      if (!id) return;
+
+      setPendingLikeIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
     },
   });
 
@@ -47,9 +56,10 @@ function App() {
   const [optimisticLikes, setOptimisticLikes] = useState<
     Record<string, number>
   >({});
+  const [pendingLikeIds, setPendingLikeIds] = useState<Set<string>>(new Set());
 
-  const handleLike = (id: string) => {
-    mutation.mutate(id);
+  const handleLike = (id: string, currentLikes: number) => {
+    mutation.mutate({ id, currentLikes }); // ✅ currentLikes를 넘겨줌
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -65,7 +75,8 @@ function App() {
             id={item.id}
             text={item.text}
             likes={optimisticLikes[item.id] ?? item.likes}
-            onLike={handleLike}
+            onLike={(id, currentLikes) => handleLike(id, currentLikes)}
+            isPending={pendingLikeIds.has(item.id)}
           />
         ))}
       </ul>
