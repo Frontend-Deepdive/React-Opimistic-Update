@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNotionData, increaseLike } from "./api/notion";
-import { useOptimistic, useState } from "react";
+import { useOptimistic, useState, startTransition } from "react";
 import { Card } from "./components/Card";
 
 function App() {
@@ -34,7 +34,9 @@ function App() {
   }));
 
   const handleLike = (id: string, currentLikes: number) => {
-    addOptimisticLike({ id, currentLikes }); // UI에 즉시 반영
+    startTransition(() => {
+      addOptimisticLike({ id, currentLikes }); // UI즉시반영
+    });
     mutation.mutate(id); // 서버에 좋아요 증가 요청
   };
 
