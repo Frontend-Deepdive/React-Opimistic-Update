@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Card.css';
 import imgArr from '../constants/img.json';
 import useStore from '../stores/useStore';
@@ -11,13 +11,17 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ isError, id }) => {
   const { likes, incrementLikes, decrementLikes } = useStore();
-  const [liked, setLiked] = React.useState(false);
+  const [liked, setLiked] = useState(false);
+  const [pending, setPending] = useState(false);
 
   const handleLike = async () => {
-    // 좋아요 상태를 토글
+    if (pending) return;
+    setPending(true);
+
     if (liked) {
       decrementLikes(id);
       setLiked(false);
+      setPending(false);
       return;
     }
     incrementLikes(id);
@@ -25,15 +29,14 @@ const Card: React.FC<CardProps> = ({ isError, id }) => {
 
     try {
       if (isError) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, 3000);
-          console.log('낙관적 업데이트 중... 3초 대기');
-        });
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         decrementLikes(id);
         setLiked(false);
         console.log('낙관적 업데이트로 좋아요가 취소됩니다!');
       }
-    } catch (error) {}
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
