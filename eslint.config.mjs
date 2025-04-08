@@ -1,28 +1,28 @@
 // @ts-check
 
-import eslint from '@eslint/js';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
-import airbnb from 'eslint-config-airbnb-typescript';
-import eslintPluginReact from 'eslint-plugin-react';
-import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
+import eslint from "@eslint/js";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+import airbnb from "eslint-config-airbnb-typescript";
+import eslintPluginReact from "eslint-plugin-react";
+import eslintPluginReactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
 
 export default [
   {
-    files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
+    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     languageOptions: {
       parser: tsParser,
-      ecmaVersion: 'latest',
-      sourceType: 'module',
+      ecmaVersion: "latest",
+      sourceType: "module",
       globals: {
-        document: 'readonly',
-        window: 'readonly',
+        ...globals.browser, // 브라우저 전역 전부 포함
       },
     },
     plugins: {
-      '@typescript-eslint': tsPlugin,
+      "@typescript-eslint": tsPlugin,
       react: eslintPluginReact,
-      'react-hooks': eslintPluginReactHooks,
+      "react-hooks": eslintPluginReactHooks,
     },
     rules: {
       ...eslint.configs.recommended.rules,
