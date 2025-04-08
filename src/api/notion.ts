@@ -16,7 +16,7 @@ interface NotionPage {
 interface RefinedNotionData {
   id: string;
   text: string;
-  Number: number | null;
+  likes: number | null;
 }
 
 export const fetchNotionData = async (): Promise<RefinedNotionData[]> => {
@@ -28,9 +28,20 @@ export const fetchNotionData = async (): Promise<RefinedNotionData[]> => {
   return results.map((page) => {
     const properties = page.properties;
     return {
-      id: properties["글id"]?.title?.[0]?.plain_text || "",
-      text: properties["텍스트"]?.rich_text?.[0]?.plain_text || "",
-      Number: properties["Number"]?.number ?? null,
+      id: page.id, //uuid
+      text: properties["text"]?.rich_text?.[0]?.plain_text || "",
+      likes: properties["likes"]?.number ?? null,
     };
   });
+};
+
+export const increaseLike = async (pageId: string): Promise<void> => {
+  try {
+    await axios.patch(
+      `${import.meta.env.VITE_API_BASE_URL}/notion/like/${pageId}`
+    );
+  } catch (error) {
+    console.error("Failed to increase like:", error);
+    throw error;
+  }
 };
