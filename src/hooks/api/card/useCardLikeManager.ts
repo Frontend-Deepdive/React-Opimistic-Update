@@ -1,5 +1,7 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { CardAPI, CardDetailResponse } from "../../../api/cardAPI";
+import useGetCardDetail from "./useGetCardDetail";
 
 interface UseCardLikeManagerProps {
   cardId: number;
@@ -16,6 +18,34 @@ const useCardLikeManager = ({
 
   const [isLiked, setIsLiked] = useState<boolean>(initialIsLiked);
   const [likeCount, setLikeCount] = useState<number>(initialLikeCount);
+
+  const useLikeMutation = (
+    mutationFunction: (cardId: number) => Promise<void>,
+    isLikeAction: boolean
+  ) => {
+    return useMutation({
+      mutationFn: mutationFunction,
+      // onMutate, onError, onSettled 구현
+    });
+  };
+
+  const { mutate: like } = useLikeMutation(CardAPI.like, true);
+  const { mutate: unlike } = useLikeMutation(CardAPI.unlike, false);
+
+  const toggleLike = () => {
+    if (isLiked) {
+      unlike(cardId);
+      return;
+    }
+
+    like(cardId);
+  };
+
+  return {
+    isLiked,
+    likeCount,
+    toggleLike,
+  };
 };
 
 export default useCardLikeManager;
