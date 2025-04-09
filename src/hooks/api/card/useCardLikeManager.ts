@@ -39,6 +39,14 @@ const useCardLikeManager = ({
 
         return { previousData };
       },
+      onError: (_error, _variables, context) => {
+        if (context) {
+          queryClient.setQueryData(useGetCardDetail.getKey(cardId), context.previousData);
+        }
+
+        setIsLiked(!isLikeAction);
+        setLikeCount((prevCount) => prevCount - (isLikeAction ? 1 : -1));
+      },
     });
   };
 
