@@ -47,6 +47,12 @@ const useCardLikeManager = ({
         setIsLiked(!isLikeAction);
         setLikeCount((prevCount) => prevCount - (isLikeAction ? 1 : -1));
       },
+      onSettled: () => {
+        queryClient.invalidateQueries({
+          queryKey: useGetCardDetail.getKey(cardId),
+          refetchType: "all",
+        });
+      },
     });
   };
 
