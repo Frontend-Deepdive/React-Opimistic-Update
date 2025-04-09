@@ -25,7 +25,20 @@ const useCardLikeManager = ({
   ) => {
     return useMutation({
       mutationFn: mutationFunction,
-      // onMutate, onError, onSettled 구현
+      onMutate: async () => {
+        await queryClient.cancelQueries({
+          queryKey: useGetCardDetail.getKey(cardId),
+        });
+
+        setIsLiked(isLikeAction);
+        setLikeCount((prevCount) => prevCount + (isLikeAction ? 1 : -1));
+
+        const previousData = queryClient.getQueryData<CardDetailResponse>(
+          useGetCardDetail.getKey(cardId)
+        );
+
+        return { previousData };
+      },
     });
   };
 
