@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Card.css';
 import imgArr from '../constants/img.json';
+import likeApi from '../apis/likeApi';
+import { useMutation } from '@tanstack/react-query';
 import useStore from '../stores/useStore';
 
 interface CardProps {
@@ -9,34 +11,46 @@ interface CardProps {
   id: string;
 }
 
-const Card: React.FC<CardProps> = ({ isError, id }) => {
+const Card: React.FC<CardProps> = ({ initialLikes, isError, id }) => {
   const { likes, incrementLikes, decrementLikes } = useStore();
   const [liked, setLiked] = useState(false);
-  const [pending, setPending] = useState(false);
 
-  const handleLike = async () => {
-    if (pending) return;
-    setPending(true);
-
-    if (liked) {
-      decrementLikes(id);
-      setLiked(false);
-      setPending(false);
-      return;
+  useEffect(() => {
+    if (!(id in likes)) {
+      for (let i = 0; i < initialLikes; i++) incrementLikes(id);
     }
-    incrementLikes(id);
-    setLiked(true);
+  }, [id, initialLikes, incrementLikes, likes]);
 
-    try {
-      if (isError) {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        decrementLikes(id);
-        setLiked(false);
-        console.log('낙관적 업데이트로 좋아요가 취소됩니다!');
-      }
-    } finally {
-      setPending(false);
-    }
+  const mutation = useMutation({
+    mutationFn: (like: boolean) => likeApi(like, isError),
+
+    onMutate: async (newLike) => {
+      console.log(`${id}: ${newLike ? '좋아요' : '취소'} 시도`);
+      if (newLike) incrementLikes(id);
+      else decrementLikes(id);
+      setLiked(newLike);
+    },
+
+    onError: (_err, newLike) => {
+      console.error(`${id}: ${newLike ? '좋아요' : '취소'} 실패 → 롤백`);
+      if (newLike) decrementLikes(id);
+      else incrementLikes(id);
+      setLiked(!newLike);
+    },
+
+    onSuccess: (_data, newLike) => {
+      console.log(`${id}: ${newLike ? '좋아요 성공' : '좋아요 취소 성공'}`);
+    },
+
+    onSettled: () => {
+      console.log(`${id}: 쿼리 무효화`);
+    },
+  });
+
+  const handleLike = () => {
+    if (mutation.isPending) return;
+    const nextLiked = !liked;
+    mutation.mutate(nextLiked);
   };
 
   return (
@@ -49,9 +63,9 @@ const Card: React.FC<CardProps> = ({ isError, id }) => {
         )}
       </div>
       <div>
-        {id == 'cider' ? '사이다' : '쭈니'}를 {likes[id] || 0}명의 사람이 좋아합니다.
+        {id === 'cider' ? '사이다' : '쭈니'}를 {likes[id] || 0}명이 좋아합니다.
       </div>
-      <button className='like-button' onClick={handleLike}>
+      <button className='like-button' onClick={handleLike} disabled={mutation.isPending}>
         {liked ? (
           <i className='fa-solid fa-heart' style={{ color: '#ff4255' }}></i>
         ) : (
