@@ -6,6 +6,7 @@ import tsParser from '@typescript-eslint/parser';
 import airbnb from 'eslint-config-airbnb-typescript';
 import eslintPluginReact from 'eslint-plugin-react';
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 
 export default [
   {
@@ -15,8 +16,7 @@ export default [
       ecmaVersion: 'latest',
       sourceType: 'module',
       globals: {
-        document: 'readonly',
-        window: 'readonly',
+        ...globals.browser,
       },
     },
     plugins: {
